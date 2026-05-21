@@ -1,0 +1,5 @@
+[1] When user try to create a new exam, there is an error appears because of a conflict
+on the requests between "Getting access token" and "Sending exam's data".[Not solved]
+[2] I need to prevent Instructors from accessing their exams (Start and finish).
+[3] If students finished their exams, they can't access it again, so we need to check
+If the exam's id is included into the User collection or not.
