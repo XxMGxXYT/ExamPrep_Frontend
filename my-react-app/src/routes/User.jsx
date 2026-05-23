@@ -4,15 +4,18 @@ import { useState } from "react"
 import { AtSignIcon, AttachmentIcon, DeleteIcon, EditIcon, EmailIcon, LockIcon, StarIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
 import axios from "../api/Axios";
+import { useNavigate } from "react-router-dom";
 
 // Get the user data and put them in their places [Done].
 // Send the edit form data to the backend.
 // Implement delete account functionality.
 
 export default function User() {
-    const { user, setUser, login } = useAuth();
+    const { user, setUser, login, logout } = useAuth();
     const [collapsed, setCollapsed] = useState(true);
+    const [confDelete, setConfDelete] = useState(false)
     const toast = useToast();
+    const navigate = useNavigate()
     const toggleCollapse = () => {
         setCollapsed(!collapsed);
     }
@@ -31,6 +34,32 @@ export default function User() {
             ...prevData,
             [name]: value
         }));
+    }
+
+    const handleDeleteUser = async () => {
+        try {
+            const response = await axios.delete("/user")
+            if (response.status === 200) {
+                toast({
+                    title: "Success",
+                    description: response.data.message || "User information updated successfully.",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
+                navigate("/")
+                logout();
+            }
+        } catch (err) {
+            console.error(err.message)
+            toast({
+                title: "Error",
+                description: "Internal server error!",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     }
 
     const handleSubmit = async (e) => {
@@ -90,7 +119,7 @@ export default function User() {
     return (
         <SimpleGrid position={{ base: "relative", md: "unset" }} columns={10} spacing={0} height="100vh">
             {clicked &&
-                <Box position="fixed" top="0" left="0" width="100vw" height="100vh" bg="blackAlpha.600" zIndex="10" display="flex" justifyContent="center" alignItems="center">
+                <Box position="fixed" top="0" left="0" width="100vw" height="100vh" bg="blackAlpha.600" zIndex="10000" display="flex" justifyContent="center" alignItems="center">
                     <VStack bg="white" p="6" borderRadius="md" spacing="4">
                         <Text fontSize="xl" fontWeight="bold">Edit Account</Text>
                         <form onSubmit={handleSubmit}>
@@ -116,6 +145,21 @@ export default function User() {
                                 Save
                             </Box>
                             <Box as="button" bg="gray.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "gray.600" }} onClick={() => setClicked(false)}>
+                                Cancel
+                            </Box>
+                        </HStack>
+                    </VStack>
+                </Box>
+            }
+            {confDelete &&
+                <Box position="fixed" top="0" left="0" width="100vw" height="100vh" bg="blackAlpha.600" zIndex="10000" display="flex" justifyContent="center" alignItems="center">
+                    <VStack bg="white" p="6" borderRadius="md" spacing="4">
+                        <Text fontSize="xl" colorScheme="red" fontWeight="bold">Are you sure you want to delete your account?</Text>
+                        <HStack spacing="4">
+                            <Box as="button" bg="red.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "red.600" }} onClick={handleDeleteUser}>
+                                Delete
+                            </Box>
+                            <Box as="button" bg="gray.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "gray.600" }} onClick={() => setConfDelete(false)}>
                                 Cancel
                             </Box>
                         </HStack>
@@ -165,7 +209,7 @@ export default function User() {
                         <Box aria-label="Edit account" as="button" bg="blue.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "blue.600" }} onClick={() => setClicked(!clicked)}>
                             <EditIcon />
                         </Box>
-                        <Box aria-label="Delete account" as="button" bg="red.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "red.600" }}>
+                        <Box aria-label="Delete account" as="button" bg="red.500" color="white" py="10px" px="15px" borderRadius="md" _hover={{ bg: "red.600" }} onClick={() => setConfDelete(true)}>
                             <DeleteIcon />
                         </Box>
                     </HStack>
