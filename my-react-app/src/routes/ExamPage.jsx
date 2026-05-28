@@ -7,7 +7,7 @@ import Axios from "../api/Axios";
 
 export default function ExamPage() {
     const toast = useToast()
-    const { exams, user, reload } = useAuth()
+    const { exams, user, setExamsResults } = useAuth()
     const { id } = useParams()
     const exam = exams.find((exam) => exam._id === id)
     // Get the exam's result id
@@ -77,7 +77,11 @@ export default function ExamPage() {
         }
         try {
             const response = await Axios.post(`/validate-exam/${id}`, formData)
+            const res = await Axios.get("/results");
+            // console.log("Exams results data fetched successfully:", response.data.data);
+            setExamsResults(res.data.data);
             if (response.data.success) {
+                navigate(`/exam-result/${id}`)
                 toast({
                     title: "Exam submitted successfully",
                     description: "Your exam has been submitted successfully.",
@@ -101,11 +105,6 @@ export default function ExamPage() {
                 ...prevVal,
                 userOptions: []
             }))
-            // Navigate to the exam result page after submission
-            reload()
-            setTimeout(() => {
-                navigate(`/exam-result/${id}`)
-            }, 1000)
         } catch (err) {
             if (err.response.status === 400) {
                 toast({
